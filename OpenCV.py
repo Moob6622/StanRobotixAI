@@ -54,6 +54,9 @@ class ImageLabelisation (object):
             cv2.destroyAllWindows()
             self.cl_ind = 0
         return self.rectCoords
+      
+    def Test ():
+        return 56127
     
 import OpenCV
 x = OpenCV.ImageLabelisation(3)
