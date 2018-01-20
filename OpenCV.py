@@ -53,7 +53,8 @@ class ImageLabelisation (object):
                     break
             cv2.destroyAllWindows()
             self.cl_ind = 0
-
+        return self.rectCoords
+      
     def Test ():
         return 56127
     
