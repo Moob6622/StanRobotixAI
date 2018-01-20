@@ -52,7 +52,8 @@ class ImageLabelisation (object):
                 if cv2.waitKey(20) & 0xFF == 27:
                     break
             cv2.destroyAllWindows()
-            self.cl_ind = 0 
+            self.cl_ind = 0
+        return self.rectCoords
     
 import OpenCV
 x = OpenCV.ImageLabelisation(3)
