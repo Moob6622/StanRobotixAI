@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Jan 20 16:04:47 2018
+
+@author: Master
+"""
 import numpy
 import matplotlib.pyplot as plt
 import cv2
@@ -15,10 +21,6 @@ class ImageLabelisation (object):
     def Coord (self,event,x,y,param,i):
 
         if event == cv2.EVENT_LBUTTONDOWN:
-            print("CLICKED")
-            print (i)
-            print (self.ind)
-            print (self.cl_ind)
             ##stockage des coordonnees
             self.rectCoords[i][self.cl_ind][self.ind] = x
             self.rectCoords[i][self.cl_ind][self.ind+1] = y
@@ -46,12 +48,14 @@ class ImageLabelisation (object):
             cv2.imshow('Window'+str(i),self.base[i])
             ##appel fonction dessin de carres + stockage de coords 
             cv2.setMouseCallback('Window'+str(i),self.Coord,i)
-            ok = 0
             while(True) :
                 if cv2.waitKey(20) & 0xFF == 27:
                     break
             cv2.destroyAllWindows()
-            self.cl_ind = 0 
+            self.cl_ind = 0
+
+    def Test ():
+        return 56127
     
 import OpenCV
 x = OpenCV.ImageLabelisation(3)
