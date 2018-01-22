@@ -54,12 +54,6 @@ class ImageLabelisation (object):
             cv2.destroyAllWindows()
             self.cubeIndex = 0
 
-    def __call__(self) :
-
-        #ceci est du code
-        x = 73273/0
-
-        
 import ImageLabelization    
 x = ImageLabelization.ImageLabelisation(3)
 x.DrawRect()
