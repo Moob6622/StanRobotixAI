@@ -16,25 +16,25 @@ class ImageLabelisation (object):
         self.base = []
         self.solution = []
         self.rectCoords  = [[[0,0,0,0]]]
-        self.ind = int(0)
-        self.cl_ind = int(0)
+        self.index = int(0)
+        self.cubeIndex = int(0)
     def Coord (self,event,x,y,param,i):
 
         if event == cv2.EVENT_LBUTTONDOWN:
             ##stockage des coordonnees
-            self.rectCoords[i][self.cl_ind][self.ind] = x
-            self.rectCoords[i][self.cl_ind][self.ind+1] = y
-            self.ind = self.ind +2
+            self.rectCoords[i][self.cubeIndex][self.index] = x
+            self.rectCoords[i][self.cubeIndex][self.index+1] = y
+            self.index = self.index +2
             
-        if(self.ind == 4) :
+        if(self.index == 4) :
             ##affichage du rectangle
-            cv2.rectangle(self.solution[i],(self.rectCoords[i][self.cl_ind][0],self.rectCoords[i][self.cl_ind][1]),(self.rectCoords[i][self.cl_ind][2] ,self.rectCoords[i][self.cl_ind][3]),(0,0,255),1,8,0)
+            cv2.rectangle(self.solution[i],(self.rectCoords[i][self.cubeIndex][0],self.rectCoords[i][self.cubeIndex][1]),(self.rectCoords[i][self.cubeIndex][2] ,self.rectCoords[i][self.cubeIndex][3]),(0,0,255),1,8,0)
             ##update de limage
             cv2.imshow('Window'+str(i),self.solution[i])
             ##update des arrays 
-            self.ind = 0
+            self.index = 0
             self.rectCoords[i].append([0,0,0,0])
-            self.cl_ind  = self.cl_ind + 1
+            self.cubeIndex  = self.cubeIndex + 1
 
     def DrawRect (self):
         for i in range(0,self.n) :
@@ -52,9 +52,9 @@ class ImageLabelisation (object):
                 if cv2.waitKey(20) & 0xFF == 27:
                     break
             cv2.destroyAllWindows()
-            self.cl_ind = 0
+            self.cubeIndex = 0
 
-    
-import OpenCV
-x = OpenCV.ImageLabelisation(3)
+        
+import ImageLabelization    
+x = ImageLabelization.ImageLabelisation(3)
 x.DrawRect()
