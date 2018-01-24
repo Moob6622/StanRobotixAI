@@ -9,7 +9,7 @@ from chainercv.datasets import voc_bbox_label_names
 from chainercv.links import SSD300
 from chainercv.links import SSD512
 from chainercv import utils
-from chainercv.visualization import vis_bbox
+from chainercv.visualizations  import vis_bbox
 
 def main():
     parser  = argparse.ArgumentParser()
