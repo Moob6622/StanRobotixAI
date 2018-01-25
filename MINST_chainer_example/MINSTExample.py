@@ -52,7 +52,7 @@ optimiser = optimizers.SGD()
 optimiser.setup(model)
 
 updater = training.StandardUpdater(train_iter, optimiser)
-trainer = training.Trainer(updater, (20, 'epoch'), out='result')
+trainer = training.Trainer(updater, (500, 'epoch'), out='result')
 trainer.extend(extensions.Evaluator(test_iter, model))
 trainer.extend(extensions.LogReport())
 trainer.extend(extensions.PrintReport(['epoch', 'main/accuracy', 'validation/main/accuracy']))
