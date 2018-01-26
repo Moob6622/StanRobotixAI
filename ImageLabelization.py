@@ -4,7 +4,7 @@ Created on Sat Jan 20 16:04:47 2018
 
 @author: Master
 """
-import numpy
+import numpy as np
 import matplotlib.pyplot as plt
 import cv2
 import time
@@ -18,6 +18,7 @@ class ImageLabelisation (object):
         self.rectCoords  = [[[0,0,0,0]]]
         self.index = int(0)
         self.cubeIndex = int(0)
+        self.bbox = np.empty((self.cubeIndex, 4))
     def Coord (self,event,x,y,param,i):
 
         if event == cv2.EVENT_LBUTTONDOWN:
@@ -53,6 +54,7 @@ class ImageLabelisation (object):
                     break
             cv2.destroyAllWindows()
             self.cubeIndex = 0
+            
 
 import ImageLabelization    
 x = ImageLabelization.ImageLabelisation(3)

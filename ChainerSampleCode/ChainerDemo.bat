@@ -1,0 +1,1 @@
+@py.exe D:\PythonScripts\StanRobotixAI\ChainerSampleCode\ChainerDemo.py %*

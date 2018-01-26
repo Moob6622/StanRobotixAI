@@ -1,4 +1,4 @@
-
+#!python3
 
 import argparse
 import matplotlib.pyplot as plt
@@ -16,14 +16,13 @@ def main():
     parser.add_argument('--model', choices = ('ssd300', 'ssd512'), default = 'ssd300')
     parser.add_argument('--gpu', type = int , default = -1)
     parser.add_argument('--pretrained_model', default = 'voc0712')
-    parser.add_argument('image')
-    parser.parse_args()
+    parser.add_argument('--image' , default = 'town.jpg')
+    args = parser.parse_args()
 
     if args.model == 'ssd300' :
         model = SSD300(n_fg_class = len(voc_bbox_label_names), pretrained_model = args.pretrained_model)
     elif agrs.model == 'ssd512' :
         model = SSD512(n_fg_class = len(voc_bbox_label_names), pretrained_model = args.pretrained_model)
-
 
     if args.gpu >= 0:
         chainer.cuda.get_device_from_id(args.gpu).use()
@@ -35,7 +34,7 @@ def main():
 
     vis_bbox(img, bbox, label, score, label_names = voc_bbox_label_names)
 
+    print ('showing')
     plt.show()
 
-if __name__ == '__main__' :
-    main()
+main()
