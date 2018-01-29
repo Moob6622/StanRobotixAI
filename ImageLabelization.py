@@ -1,13 +1,9 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Jan 20 16:04:47 2018
 
-@author: Master
-"""
 import numpy as np
 import matplotlib.pyplot as plt
 import cv2
 import time
+import chainer
 
 class ImageLabelisation (object):
 
@@ -38,7 +34,7 @@ class ImageLabelisation (object):
             
             ##update des arrays et du dico
             
-            self.bboxDict['cube'+str(i+1)+'.jpg'] = np.append (self.bboxDict['cube'+str(i+1)+'.jpg'], [self.rectCoords[i][self.cubeIndex]], axis = 0)
+            self.bboxDict['cube'+str(i+1)] = np.append (self.bboxDict['cube'+str(i+1)], [self.rectCoords[i][self.cubeIndex]], axis = 0)
             #print(str(self.bboxDict['cube'+str(i+1)+'.jpg']) + '\n')
             
             
@@ -48,15 +44,16 @@ class ImageLabelisation (object):
 
     def DrawRect (self):
         for i in range(0,self.n) :
+            print (i)
             ##update de larray base + sol
-            self.base.append(cv2.imread('cube'+str(i+1)+'.jpg',1))
+            self.base.append(cv2.imread('./imgs/cube'+str(i+1)+'.jpg',1))
             self.base[i] = cv2.resize(self.base[i],(320,240), interpolation = cv2.INTER_CUBIC)
             self.solution.append(self.base[i])
             
             ##update de l'array coord
             self.rectCoords.append([[0,0,0,0]])
             
-            self.bboxDict['cube'+str(i+1)+'.jpg'] = np.zeros((0, 4))
+            self.bboxDict['cube'+str(i+1)] = np.zeros((0, 4))
             
             ##affichage de limage
             cv2.imshow('Window'+str(i),self.base[i])
@@ -73,8 +70,13 @@ class ImageLabelisation (object):
 
         
             
+if __name__ == '__main__' :
+    import ImageLabelization
 
-import ImageLabelization    
-x = ImageLabelization.ImageLabelisation(3)
-y = x.DrawRect()
-print(y)
+    x = ImageLabelization.ImageLabelisation(3)
+    y = x.DrawRect()
+    np.savez('./data/bboxs' , *list(y.values()), **y)
+    z = np.load('./data/bboxs.npz')
+    z.files
+
+
