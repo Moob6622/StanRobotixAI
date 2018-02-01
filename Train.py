@@ -20,12 +20,34 @@ from chainercv.links.model.ssd import multibox_loss
 from chainercv.links import SSD300
 from chainercv.links import SSD512
 from chainercv import transforms
+from chainercv import utils
 
 from chainercv.links.model.ssd import random_crop_with_bbox_constraints
 from chainercv.links.model.ssd import random_distort
 from chainercv.links.model.ssd import resize_with_random_interpolation
 
 
+class MultiboxTrainChain(chainer.Chain):
+
+    def __init__(self, model, alpha=1, k=3):
+
+        super(MultiboxTrainChain, self).__init__()
+        with self.init_scope():
+            self.model = model
+        self.alpha = alpha
+        self.k = k
+
+    def __call__(self, imgs, gt_mb_locs, get_mb_labels):
+        mb_locs, mb_confs = self.model(imgs)
+        loc_loss, conf_loss = multibox_loss(
+            mb_locs, mb_confs, get_mb_locs, gte_mb_labels, self.k)
+        los = loc_loss * self.alpha + conf_loss
+
+        chainer.reporter.report (
+            {'loss': loss, 'loc/loss' : loc_loss, 'loss/conf' :conf_loss},
+            self)
+        return loss
+    
 
 class DataFeeder (object) :
     def __init__ (self, coder, size, mean) :
@@ -35,6 +57,7 @@ class DataFeeder (object) :
 
         self.size = size
         self.mean = mean
+        print('entered datafeeder')
 
     def __call__ (self, path, index) :
         
@@ -42,20 +65,20 @@ class DataFeeder (object) :
         lblDat  = np.load(path + '/lbls.npz')
 
         imgPath  = bboxDat.files[index]
-        img      = cv2.imread('./imgs/'+ imgPath +'.jpg')
-        bbox     = bboxDat[img]
-        lbl      = lblDat[img]
+        img      = utils.read_image('./imgs/'+ imgPath +'.jpg', color=True)
+        bbox     = bboxDat[imgPath]
+        lbl      = lblDat[imgPath]
 
         # 1. Augmentation de couleur
-        img = random_distort(img)
+        #img = random_distort(img)
 
         # 2. Expansion aléatoire
 
         if np.random.randint(2) :
-            img, param = transform.random_expand(
+            img, param = transforms.random_expand(
                 img, fill=self.mean, return_param=True)
             
-            bbox = transform.translate_bbox(
+            bbox = transforms.translate_bbox(
                 bbox, y_offset=param['y_offset'], x_offset=param['x_offset'])
 
         # 3. Coupage aléatoir
@@ -67,7 +90,7 @@ class DataFeeder (object) :
             bbox, y_slice=param['y_slice'], x_slice=param['x_slice'],
             allow_outside_center=False, return_param=True)
         
-        label = label[param['index']]
+        lbl = lbl[param['index']]
 
         # 4. Redimensionner avec interpolation aléatoire
 
@@ -86,24 +109,26 @@ class DataFeeder (object) :
 
         # Formatation pour le réseaux SSD
         img -= self.mean
-        mb_loc, mb_label = self.coder.encode(bbox, label)
+        mb_loc, mb_label = self.coder.encode(bbox, lbl)
 
         return img, mb_loc, mb_label
         
             
 
 def main():
+    print ('yep')
     parser = argparse.ArgumentParser()
     parser.add_argument('--path', default = './data')
-    parser.add_argument('--basesize', type = int)
-    parser.add_argument('--size', type = int)
+    parser.add_argument('--basesize', type = int, default = 3)
+    parser.add_argument('--size', type = int, default = 20000)
     parser.add_argument(
         '--model', choices=('ssd300', 'ssd512'), default='ssd300')
     parser.add_argument('--batchsize', type=int, default=32)
     parser.add_argument('--gpu', type=int, default=-1)
     parser.add_argument('--out', default='result')
-    parser.add_argument('--resume')
     args = parser.parse_args()
+
+    labelNames = ['cube']
 
     if args.model == 'ssd300':
         model = SSD300(
@@ -116,19 +141,59 @@ def main():
 
     model.use_preset('evaluate')
     
-    train_chain = MultiboxTrainChain(model)
+    trainChain = MultiboxTrainChain(model)
     
     if args.gpu >= 0:
         chainer.cuda.get_device_from_id(args.gpu).use()
-    model.to_gpu()
+        model.to_gpu()
     
     feeder = DataFeeder(model.coder, model.insize, model.mean)
     
-    dataset = [feeder(args.path, i%args.basesize) for i in range (0, args.size)]
-        
+    train = [feeder(args.path, i%args.basesize) for i in range (0, args.size)]
+    trainIter = chainer.iterators.MultiprocessIterator (train, args.batchsize)
+
+    test  = [feeder(args.path, i%args.basesize) for i in range (0, args.size)]
+    testIter = chainer.iterators.SerialIterator(test, args.batchsize, repeat=False, shuffle=False)
 
 
+    optimizer = chainer.optimizers.MomentumSGD()
+    optimizer.setup(trainChain)
 
+    for param in trainChain.params():
+        if param.name == 'b':
+            param.update_rule.add_hook(GradientScaling(2))
+        else :
+            param.update_rule.add_hook(WeightDecay(0.0005))
 
+    updater = training.StandardUpdater(trainIter, optimizer, device=args.gpu)
+    trainer = training.Trainer(updater, (120000, 'iteration'), args.out)
+    trainer.extend(
+        extensions.ExponentialShift('lr', 0.1, init=1e-3),
+        trigger=triggers.ManualScheduleTrigger([80000, 100000], 'iteration'))
 
-        
+    trainer.extend(
+        DetectionVOCEvaluator(
+            test_iter, model, use_07_metric=True,
+            label_names=labelNames),
+        trigger=(10000, 'iteration'))
+
+    logInterval = 10, 'iteration'
+    
+    trainer.extend(extensions.LogReport(trigger=log_interval))
+    trainer.extend(extensions.observe_lr(), trigger=log_interval)
+    trainer.extend(extensions.PrintReport(
+        ['epoch', 'iteration', 'lr',
+         'main/loss', 'main/loss/loc', 'main/loss/conf',
+         'validation/main/map']),
+        trigger=log_interval)
+    trainer.extend(extensions.ProgressBar(update_interval=10))
+
+    trainer.extend(extensions.snapshot(), trigger=(10000, 'iteration'))
+    trainer.extend(
+        extensions.snapshot_object(model, 'model_iter_{.updater.iteration}'),
+        trigger=(120000, 'iteration'))
+
+    trainer.run()
+
+if __name__ == '__main__':
+    main()
