@@ -13,8 +13,10 @@ class ImageLabelisation (object):
         self.solution = []
         self.rectCoords  = [[[0,0,0,0]]]
         self.index = int(0)                #numero de click
-        self.cubeIndex = int(0)            #nombre de boite 
+        self.cubeIndex = int(0)            #nombre de boite
+        self.lbl = int (0)
         self.bboxDict = {}                 #boites formatees pour chainer
+        self.lblDict = {}
         
     def Coord (self,event,x,y,param,i):
 
@@ -42,6 +44,16 @@ class ImageLabelisation (object):
             self.rectCoords[i].append([0,0,0,0])
             self.cubeIndex  = self.cubeIndex + 1
 
+##            lblIndx = input ()
+##            if lblIndx != None :
+##                self.lbl = lblIndx
+
+            self.lblDict['cube'+str(i+1)] = np.append (self.lblDict['cube'+str(i+1)], [[self.lbl]], axis = 0)
+            
+                
+
+            
+
     def DrawRect (self):
         for i in range(0,self.n) :
             print (i)
@@ -54,6 +66,10 @@ class ImageLabelisation (object):
             self.rectCoords.append([[0,0,0,0]])
             
             self.bboxDict['cube'+str(i+1)] = np.zeros((0, 4))
+
+            ##update de l'array lbl
+
+            self.lblDict['cube'+str(i+1)] = np.zeros((0, 1))
             
             ##affichage de limage
             cv2.imshow('Window'+str(i),self.base[i])
@@ -66,17 +82,20 @@ class ImageLabelisation (object):
                     break
             cv2.destroyAllWindows()
             self.cubeIndex = 0
-        return self.bboxDict
+        return self.bboxDict, self.lblDict
 
         
             
 if __name__ == '__main__' :
     import ImageLabelization
 
-    x = ImageLabelization.ImageLabelisation(3)
-    y = x.DrawRect()
-    np.savez('./data/bboxs' , *list(y.values()), **y)
+    x = ImageLabelization.ImageLabelisation(4)
+    bbox, lbl = x.DrawRect()
+    np.savez('./data/bboxs' , *list(bbox.values()), **bbox)
+    np.savez('./data/lbls' , *list(lbl.values()), **lbl)
     z = np.load('./data/bboxs.npz')
+    zz = np.load('./data/lbls.npz')
     z.files
+    zz.files
 
 
