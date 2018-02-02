@@ -57,9 +57,10 @@ class DataFeeder (object) :
 
         self.size = size
         self.mean = mean
-        print('entered datafeeder')
+        
 
     def __call__ (self, path, index) :
+        print('entered datafeeder')
         
         bboxDat = np.load(path + '/bboxs.npz')
         lblDat  = np.load(path + '/lbls.npz')
@@ -149,10 +150,18 @@ def main():
     
     feeder = DataFeeder(model.coder, model.insize, model.mean)
     
-    train = [feeder(args.path, i%args.basesize) for i in range (0, args.size)]
+    #train = [feeder(args.path, i%args.basesize) for i in range (0, args.size)]
+    for i in range (0, args.size) :
+        print(i)
+        train = feeder(args.path, i%args.basesize)
+        
     trainIter = chainer.iterators.MultiprocessIterator (train, args.batchsize)
 
-    test  = [feeder(args.path, i%args.basesize) for i in range (0, args.size)]
+    #test  = [feeder(args.path, i%args.basesize) for i in range (0, args.size)]
+    for i in range (0, args.size) :
+        print(i)
+        test = feeder(args.path, i%args.basesize)
+        
     testIter = chainer.iterators.SerialIterator(test, args.batchsize, repeat=False, shuffle=False)
 
 
