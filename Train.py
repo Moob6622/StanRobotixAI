@@ -182,7 +182,7 @@ def main():
 
     trainer.extend(
         DetectionVOCEvaluator(
-            test_iter, model, use_07_metric=True,
+            testIter, model, use_07_metric=True,
             label_names=labelNames),
         trigger=(10000, 'iteration'))
 
