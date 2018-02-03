@@ -71,7 +71,7 @@ class DataFeeder (object) :
         lbl      = lblDat[imgPath]
 
         # 1. Augmentation de couleur
-        #img = random_distort(img)
+        img = random_distort(img)
 
         # 2. Expansion aléatoire
 
@@ -117,11 +117,10 @@ class DataFeeder (object) :
             
 
 def main():
-    print ('yep')
     parser = argparse.ArgumentParser()
     parser.add_argument('--path', default = './data')
     parser.add_argument('--basesize', type = int, default = 3)
-    parser.add_argument('--size', type = int, default = 20000)
+    parser.add_argument('--size', type = int, default = 20)
     parser.add_argument(
         '--model', choices=('ssd300', 'ssd512'), default='ssd300')
     parser.add_argument('--batchsize', type=int, default=32)
@@ -133,11 +132,11 @@ def main():
 
     if args.model == 'ssd300':
         model = SSD300(
-            n_fg_class=len(voc_bbox_label_names),
+            n_fg_class=len(labelNames),
             pretrained_model='imagenet')
     elif args.model == 'ssd512':
         model = SSD512(
-            n_fg_class=len(voc_bbox_label_names),
+            n_fg_class=len(labelNames),
             pretrained_model='imagenet')
 
     model.use_preset('evaluate')
@@ -151,18 +150,22 @@ def main():
     feeder = DataFeeder(model.coder, model.insize, model.mean)
     
     #train = [feeder(args.path, i%args.basesize) for i in range (0, args.size)]
+    train =[]
     for i in range (0, args.size) :
         print(i)
-        train = feeder(args.path, i%args.basesize)
+        train.append(feeder(args.path, i%args.basesize))
         
     trainIter = chainer.iterators.MultiprocessIterator (train, args.batchsize)
 
     #test  = [feeder(args.path, i%args.basesize) for i in range (0, args.size)]
+    testArr =[]
     for i in range (0, args.size) :
         print(i)
-        test = feeder(args.path, i%args.basesize)
-        
-    testIter = chainer.iterators.SerialIterator(test, args.batchsize, repeat=False, shuffle=False)
+        testArr.append(feeder(args.path, i%args.basesize))
+
+    np.save('./data/test',testArr, allow_pickle = True)
+    test = np.load('./data/test.npy')    
+    testIter = chainer.iterators.SerialIterator(test, args.size)#, repeat=True, shuffle=True)
 
 
     optimizer = chainer.optimizers.MomentumSGD()
@@ -186,7 +189,7 @@ def main():
             label_names=labelNames),
         trigger=(10000, 'iteration'))
 
-    logInterval = 10, 'iteration'
+    log_interval = 10, 'iteration'
     
     trainer.extend(extensions.LogReport(trigger=log_interval))
     trainer.extend(extensions.observe_lr(), trigger=log_interval)

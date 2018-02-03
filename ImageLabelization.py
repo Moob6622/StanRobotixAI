@@ -97,5 +97,6 @@ if __name__ == '__main__' :
     zz = np.load('./data/lbls.npz')
     z.files
     zz.files
+    
 
 
