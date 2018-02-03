@@ -22,20 +22,45 @@ class ImageLabelisation (object):
 
         if event == cv2.EVENT_LBUTTONDOWN:
             ##stockage des coordonnees
-            self.rectCoords[i][self.cubeIndex][self.index] = x
-            self.rectCoords[i][self.cubeIndex][self.index+1] = y
+            self.rectCoords[i][self.cubeIndex][self.index] = y
+            self.rectCoords[i][self.cubeIndex][self.index+1] = x
             
             self.index = self.index +2
             
         if(self.index == 4) :
             ##affichage du rectangle
-            cv2.rectangle(self.solution[i],(self.rectCoords[i][self.cubeIndex][0],self.rectCoords[i][self.cubeIndex][1]),(self.rectCoords[i][self.cubeIndex][2] ,self.rectCoords[i][self.cubeIndex][3]),(0,0,255),1,8,0)
+            cv2.rectangle(self.solution[i],(self.rectCoords[i][self.cubeIndex][1],self.rectCoords[i][self.cubeIndex][0]),(self.rectCoords[i][self.cubeIndex][3] ,self.rectCoords[i][self.cubeIndex][2]),(0,0,255),1,8,0)
             
             ##update de limage
             cv2.imshow('Window'+str(i),self.solution[i])
             
             ##update des arrays et du dico
-            
+##            x =[]
+##            y =[]
+##
+##            xp = []
+##            yp = []
+##
+##            for j in range(0,4):
+##                if i%2 == 0:
+##                    x.append(self.rectCoords[i][self.cubeIndex][j])
+##                    xp.append(self.rectCoords[i][self.cubeIndex][j])
+##                else :
+##                    y.append(self.rectCoords[i][self.cubeIndex][j])
+##                    yp.append(self.rectCoords[i][self.cubeIndex][j])
+##                    
+##            x.sort()
+##            y.sort()
+##
+##            if y!=yp :
+##                save =  self.rectCoords[i][self.cubeIndex][0]
+##                self.rectCoords[i][self.cubeIndex][0] = self.rectCoords[i][self.cubeIndex][2]
+##                self.rectCoords[i][self.cubeIndex][2] = save
+##            if x!=xp:
+##                save  = self.rectCoords[i][self.cubeIndex][1]
+##                self.rectCoords[i][self.cubeIndex][1] = self.rectCoords[i][self.cubeIndex][3]
+##                self.rectCoords[i][self.cubeIndex][3] = save
+                     
             self.bboxDict['cube'+str(i+1)] = np.append (self.bboxDict['cube'+str(i+1)], [self.rectCoords[i][self.cubeIndex]], axis = 0)
             #print(str(self.bboxDict['cube'+str(i+1)+'.jpg']) + '\n')
             

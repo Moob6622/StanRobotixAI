@@ -37,11 +37,11 @@ class MultiboxTrainChain(chainer.Chain):
         self.alpha = alpha
         self.k = k
 
-    def __call__(self, imgs, gt_mb_locs, get_mb_labels):
+    def __call__(self, imgs, gt_mb_locs, gt_mb_labels):
         mb_locs, mb_confs = self.model(imgs)
         loc_loss, conf_loss = multibox_loss(
-            mb_locs, mb_confs, get_mb_locs, gte_mb_labels, self.k)
-        los = loc_loss * self.alpha + conf_loss
+            mb_locs, mb_confs, gt_mb_locs, gt_mb_labels, self.k)
+        loss = loc_loss * self.alpha + conf_loss
 
         chainer.reporter.report (
             {'loss': loss, 'loc/loss' : loc_loss, 'loss/conf' :conf_loss},
@@ -67,8 +67,13 @@ class DataFeeder (object) :
 
         imgPath  = bboxDat.files[index]
         img      = utils.read_image('./imgs/'+ imgPath +'.jpg', color=True)
-        bbox     = bboxDat[imgPath]
+        bbox     = bboxDat[imgPath].astype(np.float32)
         lbl      = lblDat[imgPath]
+
+        isImg = utils.assert_is_image(img)
+        print(isImg)
+        isBbox = utils.assert_is_bbox(bbox)
+        print(isBbox)
 
         # 1. Augmentation de couleur
         img = random_distort(img)
@@ -90,7 +95,7 @@ class DataFeeder (object) :
         bbox, param = transforms.crop_bbox(
             bbox, y_slice=param['y_slice'], x_slice=param['x_slice'],
             allow_outside_center=False, return_param=True)
-        
+         
         lbl = lbl[param['index']]
 
         # 4. Redimensionner avec interpolation aléatoire
@@ -119,11 +124,11 @@ class DataFeeder (object) :
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--path', default = './data')
-    parser.add_argument('--basesize', type = int, default = 3)
+    parser.add_argument('--basesize', type = int, default = 4)
     parser.add_argument('--size', type = int, default = 20)
     parser.add_argument(
         '--model', choices=('ssd300', 'ssd512'), default='ssd300')
-    parser.add_argument('--batchsize', type=int, default=32)
+    parser.add_argument('--batchsize', type=int, default=1)
     parser.add_argument('--gpu', type=int, default=-1)
     parser.add_argument('--out', default='result')
     args = parser.parse_args()
@@ -143,9 +148,9 @@ def main():
     
     trainChain = MultiboxTrainChain(model)
     
-    if args.gpu >= 0:
-        chainer.cuda.get_device_from_id(args.gpu).use()
-        model.to_gpu()
+##    if args.gpu >= 0:
+##        chainer.cuda.get_device_from_id(args.gpu).use()
+##        model.to_gpu()
     
     feeder = DataFeeder(model.coder, model.insize, model.mean)
     
@@ -163,9 +168,9 @@ def main():
         print(i)
         testArr.append(feeder(args.path, i%args.basesize))
 
-    np.save('./data/test',testArr, allow_pickle = True)
+    np.save('./data/test',testArr)#, allow_pickle = True)
     test = np.load('./data/test.npy')    
-    testIter = chainer.iterators.SerialIterator(test, args.size)#, repeat=True, shuffle=True)
+    testIter = chainer.iterators.SerialIterator(test, args.size, repeat=True, shuffle=True)
 
 
     optimizer = chainer.optimizers.MomentumSGD()
