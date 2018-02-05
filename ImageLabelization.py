@@ -35,31 +35,7 @@ class ImageLabelisation (object):
             cv2.imshow('Window'+str(i),self.solution[i])
             
             ##update des arrays et du dico
-##            x =[]
-##            y =[]
-##
-##            xp = []
-##            yp = []
-##
-##            for j in range(0,4):
-##                if i%2 == 0:
-##                    x.append(self.rectCoords[i][self.cubeIndex][j])
-##                    xp.append(self.rectCoords[i][self.cubeIndex][j])
-##                else :
-##                    y.append(self.rectCoords[i][self.cubeIndex][j])
-##                    yp.append(self.rectCoords[i][self.cubeIndex][j])
-##                    
-##            x.sort()
-##            y.sort()
-##
-##            if y!=yp :
-##                save =  self.rectCoords[i][self.cubeIndex][0]
-##                self.rectCoords[i][self.cubeIndex][0] = self.rectCoords[i][self.cubeIndex][2]
-##                self.rectCoords[i][self.cubeIndex][2] = save
-##            if x!=xp:
-##                save  = self.rectCoords[i][self.cubeIndex][1]
-##                self.rectCoords[i][self.cubeIndex][1] = self.rectCoords[i][self.cubeIndex][3]
-##                self.rectCoords[i][self.cubeIndex][3] = save
+
                      
             self.bboxDict['cube'+str(i+1)] = np.append (self.bboxDict['cube'+str(i+1)], [self.rectCoords[i][self.cubeIndex]], axis = 0)
             #print(str(self.bboxDict['cube'+str(i+1)+'.jpg']) + '\n')
@@ -74,7 +50,7 @@ class ImageLabelisation (object):
 ##                self.lbl = lblIndx
 
             self.lblDict['cube'+str(i+1)] = np.append (self.lblDict['cube'+str(i+1)], [[self.lbl]], axis = 0)
-            
+            #self.lblDict['cube'+str(i+1)].append(self.lbl)
                 
 
             
@@ -95,6 +71,7 @@ class ImageLabelisation (object):
             ##update de l'array lbl
 
             self.lblDict['cube'+str(i+1)] = np.zeros((0, 1))
+            #self.lblDict['cube'+str(i+1)] = []
             
             ##affichage de limage
             cv2.imshow('Window'+str(i),self.base[i])
@@ -114,7 +91,7 @@ class ImageLabelisation (object):
 if __name__ == '__main__' :
     import ImageLabelization
 
-    x = ImageLabelization.ImageLabelisation(4)
+    x = ImageLabelization.ImageLabelisation(3)
     bbox, lbl = x.DrawRect()
     np.savez('./data/bboxs' , *list(bbox.values()), **bbox)
     np.savez('./data/lbls' , *list(lbl.values()), **lbl)

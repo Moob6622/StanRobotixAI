@@ -16,11 +16,7 @@ def main():
     parser.add_argument('--model', choices = ('ssd300', 'ssd512'), default = 'ssd300')
     parser.add_argument('--gpu', type = int , default = -1)
     parser.add_argument('--pretrained_model', default = 'voc0712')
-<<<<<<< HEAD
     parser.add_argument('image')
-=======
-    parser.add_argument('--image', default = 'mtl.jpg')
->>>>>>> 8ae81454d4b4c84e39eab6692b45315f7290475d
     args = parser.parse_args()
 
     if args.model == 'ssd300' :

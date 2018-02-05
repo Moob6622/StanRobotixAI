@@ -70,13 +70,11 @@ class DataFeeder (object) :
         bbox     = bboxDat[imgPath].astype(np.float32)
         lbl      = lblDat[imgPath]
 
-        isImg = utils.assert_is_image(img)
-        print(isImg)
-        isBbox = utils.assert_is_bbox(bbox)
-        print(isBbox)
-
+        
+        print(utils.assert_is_image(img))
         # 1. Augmentation de couleur
         img = random_distort(img)
+        print(utils.assert_is_image(img))
 
         # 2. Expansion aléatoire
 
@@ -86,7 +84,7 @@ class DataFeeder (object) :
             
             bbox = transforms.translate_bbox(
                 bbox, y_offset=param['y_offset'], x_offset=param['x_offset'])
-
+        print(utils.assert_is_image(img))
         # 3. Coupage aléatoir
 
         img, param = random_crop_with_bbox_constraints(
@@ -97,26 +95,27 @@ class DataFeeder (object) :
             allow_outside_center=False, return_param=True)
          
         lbl = lbl[param['index']]
-
+        print(utils.assert_is_image(img))
         # 4. Redimensionner avec interpolation aléatoire
 
-        _, H, W = img.shape
+##        _, H, W = img.shape
+##        
+##        img = resize_with_random_interpolation(img, (self.size, self.size))
+##        
+##        bbox = transforms.resize_bbox(bbox, (H, W), (self.size, self.size))
+##        print(utils.assert_is_image(img))
         
-        img = resize_with_random_interpolation(img, (self.size, self.size))
-        
-        bbox = transforms.resize_bbox(bbox, (H, W), (self.size, self.size))
-
         # 5. Random horizontal flipping
         img, params = transforms.random_flip(
             img, x_random=True, return_param=True)
         
         bbox = transforms.flip_bbox(
             bbox, (self.size, self.size), x_flip=params['x_flip'])
-
+        print(utils.assert_is_image(img))
         # Formatation pour le réseaux SSD
-        img -= self.mean
+##        img -= self.mean
         mb_loc, mb_label = self.coder.encode(bbox, lbl)
-
+        print(utils.assert_is_image(img))
         return img, mb_loc, mb_label
         
             
@@ -124,7 +123,7 @@ class DataFeeder (object) :
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--path', default = './data')
-    parser.add_argument('--basesize', type = int, default = 4)
+    parser.add_argument('--basesize', type = int, default = 3)
     parser.add_argument('--size', type = int, default = 20)
     parser.add_argument(
         '--model', choices=('ssd300', 'ssd512'), default='ssd300')
@@ -158,7 +157,14 @@ def main():
     train =[]
     for i in range (0, args.size) :
         print(i)
-        train.append(feeder(args.path, i%args.basesize))
+        datum = feeder(args.path, i%args.basesize)
+        x,_,_ =datum
+        utils.assert_is_image(x,color=True)
+        train.append(datum)
+        
+    print (train[0])
+    utils.assert_is_bbox_dataset(train, 1)
+    utils.assert_is_label_dataset(train,1)
         
     trainIter = chainer.iterators.MultiprocessIterator (train, args.batchsize)
 
