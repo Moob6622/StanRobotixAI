@@ -39,6 +39,7 @@ class MultiboxTrainChain(chainer.Chain):
 
     def __call__(self, imgs, gt_mb_locs, gt_mb_labels):
         mb_locs, mb_confs = self.model(imgs)
+        print(gt_mb_labels.shape, imgs.shape,gt_mb_locs.shape)
         loc_loss, conf_loss = multibox_loss(
             mb_locs, mb_confs, gt_mb_locs, gt_mb_labels, self.k)
         loss = loc_loss * self.alpha + conf_loss
@@ -68,7 +69,7 @@ class DataFeeder (object) :
         imgPath  = bboxDat.files[index]
         img      = utils.read_image('./imgs/'+ imgPath +'.jpg', color=True)
         bbox     = bboxDat[imgPath].astype(np.float32)
-        lbl      = lblDat[imgPath]
+        lbl      = lblDat[imgPath].astype(np.float32)
 
         isImg = utils.assert_is_image(img)
         print(isImg)
