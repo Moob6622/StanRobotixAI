@@ -2,4 +2,6 @@
 **/**/result
 *.jpg
 *.jpeg
+*.npz
+
 
