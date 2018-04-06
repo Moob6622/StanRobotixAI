@@ -125,7 +125,7 @@ class DataFeeder (object) :
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--path', default = './data')
-    parser.add_argument('--basesize', type = int, default = 4)
+    parser.add_argument('--basesize', type = int, default = 3)
     parser.add_argument('--size', type = int, default = 20)
     parser.add_argument(
         '--model', choices=('ssd300', 'ssd512'), default='ssd300')
@@ -155,7 +155,7 @@ def main():
     
     feeder = DataFeeder(model.coder, model.insize, model.mean)
     
-    #train = [feeder(args.path, i%args.basesize) for i in range (0, args.size)]
+    train = [feeder(args.path, i%args.basesize) for i in range (0, args.size)]
     train =[]
     for i in range (0, args.size) :
         print(i)
@@ -163,7 +163,7 @@ def main():
         
     trainIter = chainer.iterators.MultiprocessIterator (train, args.batchsize)
 
-    #test  = [feeder(args.path, i%args.basesize) for i in range (0, args.size)]
+    test  = [feeder(args.path, i%args.basesize) for i in range (0, args.size)]
     testArr =[]
     for i in range (0, args.size) :
         print(i)
