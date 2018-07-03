@@ -67,7 +67,7 @@ class DataFeeder (object) :
         lblDat  = np.load(path + '/lbls.npz')
 
         imgPath  = bboxDat.files[index]
-        img      = utils.read_image('./imgs/'+ imgPath +'.jpg', color=True)
+        img      = utils.read_image('./imgs/'+ imgPath, color=True)
         bbox     = bboxDat[imgPath].astype(np.float32)
         lbl      = lblDat[imgPath].astype(np.float32)
 
@@ -130,7 +130,7 @@ def main():
     parser.add_argument(
         '--model', choices=('ssd300', 'ssd512'), default='ssd300')
     parser.add_argument('--batchsize', type=int, default=1)
-    parser.add_argument('--gpu', type=int, default=-1)
+    parser.add_argument('--gpu', type=int, default=0)
     parser.add_argument('--out', default='result')
     args = parser.parse_args()
 

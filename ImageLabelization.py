@@ -59,7 +59,7 @@ class ImageLabelisation (object):
         for i in range(0,self.n) :
             print (i)
             ##update de larray base + sol
-            self.base.append(cv2.imread('./imgs/cube'+str(i+1)+'.jpg',1))
+            self.base.append(cv2.imread('./imgs/cube'+str(i+1),1))
             self.base[i] = cv2.resize(self.base[i],(320,240), interpolation = cv2.INTER_CUBIC)
             self.solution.append(self.base[i])
             
@@ -93,8 +93,8 @@ if __name__ == '__main__' :
 
     x = ImageLabelization.ImageLabelisation(3)
     bbox, lbl = x.DrawRect()
-    np.savez('./data/bboxs' , *list(bbox.values()), **bbox)
-    np.savez('./data/lbls' , *list(lbl.values()), **lbl)
+    np.savez('./data/bboxs' , **bbox)
+    np.savez('./data/lbls' , **lbl)
     z = np.load('./data/bboxs.npz')
     zz = np.load('./data/lbls.npz')
     z.files
